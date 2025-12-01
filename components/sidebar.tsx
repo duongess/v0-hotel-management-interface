@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter, usePathname } from "next/navigation"
 import {
   Building2,
   CalendarCheck,
@@ -15,22 +16,35 @@ import {
 } from "lucide-react"
 
 interface SidebarProps {
-  activeModule: string
-  onModuleChange: (module: any) => void
+  activeModule?: string
+  onLogout?: () => void
 }
 
-export default function Sidebar({ activeModule, onModuleChange }: SidebarProps) {
+export default function Sidebar({ onLogout }: SidebarProps) {
+  const router = useRouter()
+  const pathname = usePathname()
+
   const modules = [
-    { id: "dashboard", label: "Bảng Điều Khiển", icon: Home },
-    { id: "rooms", label: "Quản Lý Phòng", icon: Building2 },
-    { id: "bookings", label: "Quản Lý Đặt Phòng", icon: CalendarCheck },
-    { id: "customers", label: "Quản Lý Khách Hàng", icon: Users },
-    { id: "payments", label: "Quản Lý Thanh Toán", icon: CreditCard },
-    { id: "services", label: "Dịch Vụ Bổ Sung", icon: Headset },
-    { id: "staff", label: "Quản Lý Nhân Viên", icon: Users2 },
-    { id: "inventory", label: "Quản Lý Kho", icon: Package },
-    { id: "reports", label: "Báo Cáo & Thống Kê", icon: BarChart3 },
+    { id: "dashboard", label: "Bảng Điều Khiển", icon: Home, path: "/bang-dieu-khien" },
+    { id: "rooms", label: "Quản Lý Phòng", icon: Building2, path: "/bang-quan-ly-phong" },
+    { id: "bookings", label: "Quản Lý Đặt Phòng", icon: CalendarCheck, path: "/bang-quan-ly-dat-phong" },
+    { id: "customers", label: "Quản Lý Khách Hàng", icon: Users, path: "/bang-quan-ly-khach-hang" },
+    { id: "payments", label: "Quản Lý Thanh Toán", icon: CreditCard, path: "/bang-quan-ly-thanh-toan" },
+    { id: "services", label: "Dịch Vụ Bổ Sung", icon: Headset, path: "/dich-vu-bo-sung" },
+    { id: "staff", label: "Quản Lý Nhân Viên", icon: Users2, path: "/bang-quan-ly-nhan-vien" },
+    { id: "inventory", label: "Quản Lý Kho", icon: Package, path: "/quan-ly-kho" },
+    { id: "reports", label: "Báo Cáo & Thống Kê", icon: BarChart3, path: "/bao-cao-thong-ke" },
   ]
+
+  const getActiveModule = () => {
+    return modules.find((m) => pathname.includes(m.path))?.id || "dashboard"
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem("isLoggedIn")
+    localStorage.removeItem("userEmail")
+    router.push("/login")
+  }
 
   return (
     <aside className="w-64 bg-sidebar text-sidebar-foreground border-r border-sidebar-border flex flex-col">
@@ -51,11 +65,11 @@ export default function Sidebar({ activeModule, onModuleChange }: SidebarProps) 
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
         {modules.map((module) => {
           const Icon = module.icon
-          const isActive = activeModule === module.id
+          const isActive = getActiveModule() === module.id
           return (
             <button
               key={module.id}
-              onClick={() => onModuleChange(module.id)}
+              onClick={() => router.push(module.path)}
               className={`sidebar-link w-full justify-start ${isActive ? "active" : ""}`}
             >
               <Icon className="w-5 h-5" />
@@ -68,13 +82,16 @@ export default function Sidebar({ activeModule, onModuleChange }: SidebarProps) 
       {/* Footer */}
       <div className="p-4 border-t border-sidebar-border space-y-2">
         <button
-          onClick={() => onModuleChange("settings")}
-          className={`sidebar-link w-full justify-start ${activeModule === "settings" ? "active" : ""}`}
+          onClick={() => router.push("/cai-dat")}
+          className={`sidebar-link w-full justify-start ${pathname.includes("/cai-dat") ? "active" : ""}`}
         >
           <Settings className="w-5 h-5" />
           <span className="text-sm font-medium">Cài Đặt</span>
         </button>
-        <button className="sidebar-link w-full justify-start">
+        <button
+          onClick={handleLogout}
+          className="sidebar-link w-full justify-start hover:bg-red-500/10 hover:text-red-600"
+        >
           <LogOut className="w-5 h-5" />
           <span className="text-sm font-medium">Đăng Xuất</span>
         </button>
